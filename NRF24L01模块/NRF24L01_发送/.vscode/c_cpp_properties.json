@@ -3,15 +3,15 @@
         {
             "name": "Target 1",
             "includePath": [
-                "d:\\KeilProject\\STM32F103\\STM32F103C8T6\\NRF24L01\\Start",
-                "d:\\KeilProject\\STM32F103\\STM32F103C8T6\\NRF24L01\\User",
-                "d:\\KeilProject\\STM32F103\\STM32F103C8T6\\NRF24L01\\Library",
-                "d:\\KeilProject\\STM32F103\\STM32F103C8T6\\NRF24L01\\HardWare\\Inc",
-                "d:\\KeilProject\\STM32F103\\STM32F103C8T6\\NRF24L01\\System\\Inc",
+                "e:\\MyData\\MyCode\\STM32\\Module\\NRF24L01模块\\NRF24L01_发送\\Start",
+                "e:\\MyData\\MyCode\\STM32\\Module\\NRF24L01模块\\NRF24L01_发送\\User",
+                "e:\\MyData\\MyCode\\STM32\\Module\\NRF24L01模块\\NRF24L01_发送\\Library",
+                "e:\\MyData\\MyCode\\STM32\\Module\\NRF24L01模块\\NRF24L01_发送\\HardWare\\Inc",
+                "e:\\MyData\\MyCode\\STM32\\Module\\NRF24L01模块\\NRF24L01_发送\\System\\Inc",
                 "D:\\Keil\\Core\\ARM\\ARMCC\\include",
                 "D:\\Keil\\Core\\ARM\\ARMCC\\include\\rw",
-                "d:\\KeilProject\\STM32F103\\STM32F103C8T6\\NRF24L01\\System\\Src",
-                "d:\\KeilProject\\STM32F103\\STM32F103C8T6\\NRF24L01\\HardWare\\Src"
+                "e:\\MyData\\MyCode\\STM32\\Module\\NRF24L01模块\\NRF24L01_发送\\System\\Src",
+                "e:\\MyData\\MyCode\\STM32\\Module\\NRF24L01模块\\NRF24L01_发送\\HardWare\\Src"
             ],
             "defines": [
                 "USE_STDPERIPH_DRIVER",

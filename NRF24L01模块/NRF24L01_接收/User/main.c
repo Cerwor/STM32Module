@@ -16,7 +16,7 @@ int main(void)
 	while (1)
 	{
 		OLED_Printf(0,0,OLED_8X16,"%.2f",Temp1.A1);
-		OLED_Printf(0,16,OLED_8X16,"%.2f",Temp1.A1);
+		OLED_Printf(0,16,OLED_8X16,"%.2f",Temp1.B2);
 		OLED_Update();
 	}
 }

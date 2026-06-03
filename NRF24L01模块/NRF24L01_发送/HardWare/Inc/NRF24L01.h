@@ -54,6 +54,9 @@ void NRF24L01_Init(void);
 void NRF_TX_Mode(void);
 void NRF_RX_Mode(void);
 uint8_t NRF_SendPacket(uint8_t* Tx_BUFF,uint8_t Len);
+void NRF24L01_Set_TxAddr(uint8_t *pAddr, uint8_t Len);
+void NRF24L01_Set_RxAddr(uint8_t PipeNum, uint8_t *pAddr, uint8_t Len);
+uint8_t NRF24L01_Self_Check(void);
 
 
 

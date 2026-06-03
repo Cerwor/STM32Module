@@ -50,8 +50,11 @@
 #define PRIM_TX          	0x00	// 发送模式位（PTX）
 
 // 中断相关：通过 STATUS 寄存器的位判断中断来源
-#define IRQ_STATUS       	0x70	// 中断位掩码
-#define IRQ_CLEAR        	0x7E	// 清除中断标志位
+#define IRQ_STATUS       	0x70	// 中断位掩码 (RX_DR | TX_DS | MAX_RT)
+#define IRQ_CLEAR        	0x70	// 清除全部中断标志位 (写1清除)
+#define IRQ_CLEAR_RX_DR		0x40	// 单独清除 RX_DR
+#define IRQ_CLEAR_TX_DS		0x20	// 单独清除 TX_DS
+#define IRQ_CLEAR_MAX_RT	0x10	// 单独清除 MAX_RT
 #define RX_DR            	0x40	// 数据到达中断 (RX_DR)
 #define TX_DS            	0x20	// 数据发送完成中断 (TX_DS)
 #define MAX_RT           	0x10	// 达到最大重发次数中断 (MAX_RT)
