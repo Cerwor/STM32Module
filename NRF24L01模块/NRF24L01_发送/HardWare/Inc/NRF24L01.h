@@ -32,6 +32,15 @@
 #define DYNAMIC_PLOAD_LENGTH	1			// [0 = 固定有效载荷] [1 = 动态有效载荷]
 #define STATIC_PLOAD_LENGTH		32		    // 静态有效载荷长度（当不使用动态有效载荷时）
 #define ADDRESS_WIDTH					5			// 通信地址宽度（字节）
+#define NRF_MAX_PAYLOAD_LENGTH	32
+
+#define NRF_RF_CHANNEL			76			// 2476 MHz，尽量避开常见 Wi-Fi 信道
+#define NRF_RF_SETUP_VALUE		0x07		// 1Mbps，0dBm
+#define NRF_SETUP_RETR_VALUE	0x35		// 自动重发间隔 1000us，重发 5 次
+#define NRF_DYNPD_VALUE			0x01		// 通道0动态有效载荷
+#define NRF_FEATURE_VALUE		FEATURE_EN_DPL
+#define NRF_CONFIG_RX			(MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO | PWR_UP | PRIM_RX)
+#define NRF_CONFIG_TX			(MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO | PWR_UP | PRIM_TX)
 
 
 

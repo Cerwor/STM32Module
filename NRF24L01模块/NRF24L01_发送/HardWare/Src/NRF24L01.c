@@ -3,7 +3,7 @@
 
 uint8_t RX_ADDRESS[5] = {0xa5,0xa5,0xa5,0xa5,0xa5};
 uint8_t TX_ADDRESS[5] = {0xa5,0xa5,0xa5,0xa5,0xa5};
-uint8_t RX_DATA[STATIC_PLOAD_LENGTH];
+uint8_t RX_DATA[NRF_MAX_PAYLOAD_LENGTH];
 
 
 TempStruct Temp1;
@@ -11,8 +11,7 @@ TempStruct Temp1;
 
 void SIP1_Init(void)
 {
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1,ENABLE);
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1 | RCC_APB2Periph_GPIOA | RCC_APB2Periph_AFIO,ENABLE);
 
 	GPIO_InitTypeDef GPIO_InitStructure;
 	//SCK
@@ -40,9 +39,11 @@ void SIP1_Init(void)
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
 	GPIO_InitStructure.GPIO_Pin = NRF_IRQ_Pin;
 	GPIO_Init(NRF_IRQ_Port,&GPIO_InitStructure);
+	NRF_CSN_HIGH;
+	NRF_CE_LOW;
 
 	SPI_InitTypeDef SPI_InitStructure;
-	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_8;
+	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_16;
 	SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
 	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
 	SPI_InitStructure.SPI_CRCPolynomial = 7;
@@ -167,6 +168,37 @@ uint8_t NRF_SPI_SendCmd(uint8_t Cmd)
 }
 
 
+uint8_t NRF_SPI_ActivateFeatures(void)
+{
+	uint8_t Status;
+
+	NRF_CSN_LOW;
+	Status = SPI1_ReadWriteByte(ACTIVATE);
+	SPI1_ReadWriteByte(0x73);
+	NRF_CSN_HIGH;
+
+	return Status;
+}
+
+
+void NRF24L01_ConfigPayload(void)
+{
+#if DYNAMIC_PLOAD_LENGTH
+	NRF_SPI_WriteReg(FEATURE,NRF_FEATURE_VALUE);
+	if((NRF_SPI_ReadReg(FEATURE) & NRF_FEATURE_VALUE) != NRF_FEATURE_VALUE)
+	{
+		NRF_SPI_ActivateFeatures();
+		NRF_SPI_WriteReg(FEATURE,NRF_FEATURE_VALUE);
+	}
+	NRF_SPI_WriteReg(DYNPD,NRF_DYNPD_VALUE);
+#else
+	NRF_SPI_WriteReg(RX_PW_P0,STATIC_PLOAD_LENGTH);
+	NRF_SPI_WriteReg(DYNPD,0x00);
+	NRF_SPI_WriteReg(FEATURE,0x00);
+#endif
+}
+
+
 
 void NRF24L01_Init(void)
 {
@@ -178,25 +210,18 @@ void NRF24L01_Init(void)
 	NRF_SPI_WriteReg(EN_AA,0x01);                       // 使能通道0自动应答
 	NRF_SPI_WriteReg(EN_RXADDR,0x01);                   // 启用通道0接收地址
 	NRF_SPI_WriteReg(SETUP_AW,0x03);                    // 地址宽度为5字节
-	NRF_SPI_WriteReg(SETUP_RETR,0x35);                  // 自动重发间隔和次数（示例：750us，重发5次）
-	NRF_SPI_WriteReg(RF_CH,0x02);                       // 频道设置为2402 MHz
-	NRF_SPI_WriteReg(RF_SETUP,0x07);                    // RF 参数：1Mbps，0dBm
+	NRF_SPI_WriteReg(SETUP_RETR,NRF_SETUP_RETR_VALUE);  // 自动重发间隔和次数
+	NRF_SPI_WriteReg(RF_CH,NRF_RF_CHANNEL);             // RF 频道
+	NRF_SPI_WriteReg(RF_SETUP,NRF_RF_SETUP_VALUE);      // RF 参数
 	NRF_SPI_WriteBuf(RX_ADDR_P0,RX_ADDRESS,ADDRESS_WIDTH);          // 写入接收通道0地址
 	NRF_SPI_WriteBuf(TX_ADDR,TX_ADDRESS,ADDRESS_WIDTH);             // 写入发送地址
-#if DYNAMIC_PLOAD_LENGTH
-	NRF_SPI_WriteReg(DYNPD, 0x01);                      // 使能通道0动态有效载荷
-	NRF_SPI_WriteReg(FEATURE,0x07);                     // 使能动态有效载荷、ack 和相关功能
-#else
-	NRF_SPI_WriteReg(RX_PW_P0,STATIC_PLOAD_LENGTH);     // 通道0固定有效载荷长度
-	NRF_SPI_WriteReg(DYNPD, 0x00);                      // 关闭动态有效载荷
-	NRF_SPI_WriteReg(FEATURE, 0x00);                    // 关闭额外功能
-#endif
+	NRF24L01_ConfigPayload();
 	NRF_SPI_WriteReg(STATUS, IRQ_CLEAR);       	        // 清除中断标志位
 	// 清空 FIFO
 	NRF_SPI_SendCmd(FLUSH_TX);
 	NRF_SPI_SendCmd(FLUSH_RX);
 	// 配置 CONFIG 寄存器为接收模式并启用中断
-	NRF_SPI_WriteReg(CONFIG,0x3F);              // PRX模式: 中断全开, 2字节CRC, 上电
+	NRF_SPI_WriteReg(CONFIG,NRF_CONFIG_RX);     // PRX模式: 仅启用RX_DR中断, 2字节CRC, 上电
 	Delay_ms(10);
 	NRF_CE_HIGH;
 }
@@ -208,7 +233,7 @@ void NRF_TX_Mode(void)
 	NRF_SPI_WriteReg(STATUS, IRQ_CLEAR);        // 清除中断
 	NRF_SPI_SendCmd(FLUSH_RX);                  // 清空 FIFO
 	NRF_SPI_SendCmd(FLUSH_TX);
-	NRF_SPI_WriteReg(CONFIG, 0x7E);             // PTX模式: MASK全部IRQ, 2字节CRC, 上电
+	NRF_SPI_WriteReg(CONFIG, NRF_CONFIG_TX);    // PTX模式: MASK全部IRQ, 2字节CRC, 上电
 	Delay_ms(2);
 	// CE 保持 LOW，PTX 空闲状态下 CE 应为 LOW
 }
@@ -219,7 +244,7 @@ void NRF_RX_Mode(void)
 	NRF_SPI_WriteReg(STATUS, IRQ_CLEAR);        // 清除中断
 	NRF_SPI_SendCmd(FLUSH_RX);                  // 清空 FIFO
 	NRF_SPI_SendCmd(FLUSH_TX);
-	NRF_SPI_WriteReg(CONFIG, 0x3F);             // PRX模式: MASK全部IRQ, 2字节CRC, 上电
+	NRF_SPI_WriteReg(CONFIG, NRF_CONFIG_RX);    // PRX模式: 仅启用RX_DR中断, 2字节CRC, 上电
 	Delay_ms(2);
 	NRF_CE_HIGH;                                // PRX 模式 CE 拉高，开始监听
 }
@@ -234,6 +259,13 @@ uint8_t NRF_SendPacket(uint8_t* Tx_BUFF,uint8_t Len)
 	uint8_t Status;
 	uint32_t Timeout = 100000;          // 超时计数器，防止死循环
 
+	if(Tx_BUFF == 0 || Len == 0 || Len > NRF_MAX_PAYLOAD_LENGTH)
+	{
+		return 0xFF;
+	}
+
+	NRF_SPI_WriteReg(STATUS, IRQ_CLEAR);
+	NRF_SPI_SendCmd(FLUSH_TX);
 	NRF_CE_LOW;                         // 拉低 CE，准备发送
 	NRF_SPI_WriteBuf(WR_TX_PLOAD,Tx_BUFF,Len);  // 写入待发送的数据
 	NRF_CE_HIGH;                        // 拉高 CE，开始发送
@@ -243,18 +275,20 @@ uint8_t NRF_SendPacket(uint8_t* Tx_BUFF,uint8_t Len)
 	while(Timeout--)
 	{
 		Status = NRF_SPI_ReadReg(STATUS);   // 读取状态
-		if(Status & TX_DS)                  // 收到应答，发送成功
-		{
-			NRF_SPI_WriteReg(STATUS, TX_DS);    // 清除标志位
-			return 0;
-		}
 		if(Status & MAX_RT)                 // 达到重发上限，没收到应答
 		{
 			NRF_SPI_WriteReg(STATUS, MAX_RT);   // 清除标志位
 			NRF_SPI_SendCmd(FLUSH_TX);          // 清空TX FIFO
 			return 1;
 		}
+		if(Status & TX_DS)                  // 收到应答，发送成功
+		{
+			NRF_SPI_WriteReg(STATUS, TX_DS);    // 清除标志位
+			return 0;
+		}
 	}
+	NRF_SPI_WriteReg(STATUS, IRQ_CLEAR);
+	NRF_SPI_SendCmd(FLUSH_TX);
 	return 2;                               // 超时
 }
 
@@ -262,6 +296,7 @@ void NRF_ReceivePacket(void)
 {
 	uint8_t Len;
 	uint8_t Status;
+	TempStruct TempData;
 
 	// 先读取 STATUS 确认中断源
 	Status = NRF_SPI_ReadReg(STATUS);
@@ -280,7 +315,7 @@ void NRF_ReceivePacket(void)
 	NRF_CSN_HIGH;
 
 	// 判断接收到的长度是否正确
-	if(Len > 32 || Len == 0)
+	if(Len > NRF_MAX_PAYLOAD_LENGTH || Len == 0)
 	{
 		NRF_SPI_SendCmd(FLUSH_RX);
 		NRF_SPI_WriteReg(STATUS, RX_DR);    // 只清除 RX_DR
@@ -291,7 +326,9 @@ void NRF_ReceivePacket(void)
 
 	if(Len == sizeof(Temp1))
 	{
-		memcpy(&Temp1, RX_DATA, sizeof(Temp1));
+		memcpy(&TempData, RX_DATA, sizeof(TempData));
+		Temp1.A1 = TempData.A1;
+		Temp1.B2 = TempData.B2;
 	}
 
 	NRF_SPI_WriteReg(STATUS, RX_DR);       // 只清除 RX_DR
@@ -305,8 +342,10 @@ void NRF24L01_Set_TxAddr(uint8_t *pAddr, uint8_t Len)
 	if(Len < 3) Len = 3;                    // NRF24L01 最少 3 字节地址
 	NRF_CE_LOW;
 	NRF_SPI_WriteBuf(TX_ADDR, pAddr, Len);
+	NRF_SPI_WriteBuf(RX_ADDR_P0, pAddr, Len);
 	// 同步更新本地地址数组
 	memcpy(TX_ADDRESS, pAddr, Len);
+	memcpy(RX_ADDRESS, pAddr, Len);
 	Delay_us(10);
 }
 
@@ -381,4 +420,3 @@ void EXTI2_IRQHandler(void)
 		NRF_ReceivePacket();
 	}
 }
-

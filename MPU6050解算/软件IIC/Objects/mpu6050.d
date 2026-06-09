@@ -1,7 +1,7 @@
 .\objects\mpu6050.o: HeadWare\MPU6050.c
 .\objects\mpu6050.o: .\Start\stm32f10x.h
 .\objects\mpu6050.o: .\Start\core_cm3.h
-.\objects\mpu6050.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\mpu6050.o: D:\Keil\Core\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\mpu6050.o: .\Start\system_stm32f10x.h
 .\objects\mpu6050.o: .\User\stm32f10x_conf.h
 .\objects\mpu6050.o: .\Library\stm32f10x_adc.h
@@ -29,5 +29,5 @@
 .\objects\mpu6050.o: .\Library\stm32f10x_wwdg.h
 .\objects\mpu6050.o: .\Library\misc.h
 .\objects\mpu6050.o: .\System\Delay.h
-.\objects\mpu6050.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
+.\objects\mpu6050.o: D:\Keil\Core\ARM\ARMCC\Bin\..\include\math.h
 .\objects\mpu6050.o: HeadWare\MPU6050.h

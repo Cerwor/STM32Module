@@ -403,7 +403,8 @@ void AHRS_Geteuler(void)
 	//z轴不需要更改，足够稳定了
 	Gyro_Z_Measeure = (mpu6050.Gyro_Calulate[2])*2000/32768.0;
 	Yaw += Gyro_Z_Measeure*Sampling_Time;
-	mpu6050.Yaw  = 	Yaw + Yaw*0.16667;//后面这个0.16667是为了补偿角度
+//	mpu6050.Yaw  = 	Yaw + Yaw*0.16667;//后面这个0.16667是为了补偿角度
+	mpu6050.Yaw  = 	Yaw;
 	
 }
 

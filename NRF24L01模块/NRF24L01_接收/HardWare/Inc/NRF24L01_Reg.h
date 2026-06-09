@@ -11,6 +11,7 @@
 #define FLUSH_TX         	0xE1	// 清除 TX FIFO 命令 (PTX/PRX)
 #define FLUSH_RX         	0xE2	// 清除 RX FIFO 命令 (PTX/PRX)
 #define REUSE_TX_PL      	0xE3	// 重用最后一次载荷命令 (PTX)
+#define ACTIVATE         	0x50	// 激活 FEATURE 相关命令
 #define R_RX_PL_WID      	0x60	// 读取接收有效载荷宽度命令
 #define NOP              	0xFF	// 空操作
 
@@ -44,10 +45,20 @@
 
 //============================= RF24L01 状态位 ================================
 // CONFIG 寄存器位
+#define MASK_RX_DR       	0x40	// 屏蔽 RX_DR 中断
+#define MASK_TX_DS       	0x20	// 屏蔽 TX_DS 中断
+#define MASK_MAX_RT      	0x10	// 屏蔽 MAX_RT 中断
+#define EN_CRC           	0x08	// 使能 CRC
+#define CRCO             	0x04	// CRC 长度：1=2字节，0=1字节
 #define PWR_UP           	0x02	// 上电（Power Up）
 #define PWR_DOWN         	0x00	// 断电（Power Down）
 #define PRIM_RX          	0x01	// 接收模式位（PRX）
 #define PRIM_TX          	0x00	// 发送模式位（PTX）
+
+// FEATURE 寄存器位
+#define FEATURE_EN_DYN_ACK	0x01	// 允许 W_TX_PAYLOAD_NOACK
+#define FEATURE_EN_ACK_PAY	0x02	// 允许 ACK Payload
+#define FEATURE_EN_DPL    	0x04	// 允许动态有效载荷
 
 // 中断相关：通过 STATUS 寄存器的位判断中断来源
 #define IRQ_STATUS       	0x70	// 中断位掩码 (RX_DR | TX_DS | MAX_RT)
@@ -60,5 +71,4 @@
 #define MAX_RT           	0x10	// 达到最大重发次数中断 (MAX_RT)
 
 #endif
-
 

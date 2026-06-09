@@ -1,7 +1,7 @@
 .\objects\main.o: User\main.c
 .\objects\main.o: .\Start\stm32f10x.h
 .\objects\main.o: .\Start\core_cm3.h
-.\objects\main.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\main.o: D:\Keil\Core\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\main.o: .\Start\system_stm32f10x.h
 .\objects\main.o: .\User\stm32f10x_conf.h
 .\objects\main.o: .\Library\stm32f10x_adc.h
@@ -32,3 +32,4 @@
 .\objects\main.o: .\HeadWare\OLED.h
 .\objects\main.o: .\HeadWare\OLED_Data.h
 .\objects\main.o: .\HeadWare\MPU6050.h
+.\objects\main.o: .\HeadWare\Timer.h
